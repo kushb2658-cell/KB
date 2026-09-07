@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>LawaniHotel · store</title>
+  <!-- Poppins font & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Firebase v9 modular SDK (imported in JS) -->
+</head>
+<body>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    :root {
+      --primary: #e07a5f;
+      --primary-dark: #c05b3f;
+      --accent: #3d405b;
+      --bg: #f9f6f0;
+      --white: #ffffff;
+      --shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+      --radius: 20px;
+      --transition: all 0.25s ease;
+    }
+    body {
+      background: var(--bg);
+      padding-bottom: 75px;
+      overflow-x: hidden;
+    }
+    /* fixed header */
+    .top-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: var(--white);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      backdrop-filter: blur(4px);
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo i {
+      color: var(--accent);
+    }
+    .header-icons {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .header-icons a {
+      color: var(--accent);
+      font-size: 1.4rem;
+      text-decoration: none;
+      position: relative;
+      transition: var(--transition);
+    }
+    .header-icons a:hover {
+      color: var(--primary);
+    }
+    .auth-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #9aa0a6;
+      margin-left: 5px;
+    }
+    .auth-indicator.logged-in {
+      background: #2ecc71;
+    }
+    /* bottom nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--white);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+      z-index: 1000;
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: #777;
+      font-size: 0.75rem;
+      gap: 4px;
+      padding: 6px 8px;
+      transition: var(--transition);
+    }
+    .nav-item.active {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .nav-item i {
+      font-size: 1.5rem;
+    }
+    .badge {
+      background: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      top: -4px;
+      right: -8px;
+    }
+    .nav-item {
+      position: relative;
+    }
+    /* main container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 80px 16px 20px;
+    }
+    .view-section {
+      display: none;
+    }
+    .view-section.active {
+      display: block;
+    }
+    /* product grid two columns mobile */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 15px;
+    }
+    @media (min-width: 700px) {
+      .grid-2 {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (min-width: 1000px) {
+      .grid-2 {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    /* product card */
+    .product-card {
+      background: var(--white);
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+      transition: var(--transition);
+      position: relative;
+      cursor: pointer;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+    }
+    .product-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 16px;
+      background: #eae0d5;
+    }
+    .product-card h4 {
+      font-size: 0.95rem;
+      margin: 8px 0 2px;
+    }
+    .product-card .category {
+      font-size: 0.7rem;
+      color: var(--primary);
+      font-weight: 500;
+      background: #f7e9e5;
+      padding: 3px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .product-card .price {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-top: 6px;
+    }
+    .card-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .btn-icon {
+      border: none;
+      background: #f2eee8;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      transition: var(--transition);
+      color: var(--accent);
+    }
+    .btn-icon:hover {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-add {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 6px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    /* hero slider */
+    .hero-slider {
+      background: #333;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      height: 180px;
+      margin-bottom: 20px;
+    }
+    .hero-slider img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.7);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    /* modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      visibility: hidden;
+      opacity: 0;
+      transition: var(--transition);
+    }
+    .modal-overlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    .modal-card {
+      background: white;
+      border-radius: 24px;
+      max-width: 400px;
+      width: 90%;
+      padding: 24px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .tab-buttons {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 8px;
+      flex: 1;
+      border-radius: 40px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 40px;
+      border: 1px solid #ddd;
+      outline: none;
+      font-size: 0.9rem;
+    }
+    /* category bubbles */
+    .bubble-wrap {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 8px 0 12px;
+      scrollbar-width: none;
+    }
+    .bubble {
+      padding: 8px 20px;
+      background: #eae0d5;
+      border-radius: 40px;
+      white-space: nowrap;
+      font-weight: 500;
+      cursor: pointer;
+      color: #444;
+    }
+    .bubble.active {
+      background: var(--primary);
+      color: white;
+    }
+    /* toast */
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 20px;
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 40px;
+      z-index: 5000;
+      font-size: 0.9rem;
+      display: none;
+    }
+    /* order/status */
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 40px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    /* menu overlay */
+    .menu-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 1500;
+      visibility: hidden;
+      opacity: 0;
+    }
+    .menu-panel {
+      position: fixed;
+      right: 0;
+      top: 0;
+      width: 280px;
+      height: 100%;
+      background: white;
+      z-index: 1600;
+      padding: 30px 20px;
+      transform: translateX(100%);
+      transition: var(--transition);
+    }
+    .menu-overlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    .menu-panel.show {
+      transform: translateX(0);
+    }
+    .mt-4 { margin-top: 20px; }
+    .text-small { font-size: 0.8rem; }
+  </style>
+
+  <!-- fixed header -->
+  <header class="top-header">
+    <div class="logo"><i class="fas fa-hotel"></i> LawaniHotel</div>
+    <div class="header-icons">
+      <a href="#search" style="font-size:1.3rem;"><i class="fas fa-search"></i></a>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <span class="auth-indicator" id="authIndicator"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- container -->
+  <div class="container" id="appContainer">
+    <!-- HOME -->
+    <section id="home" class="view-section active">
+      <div id="heroSliderContainer" class="hero-slider"></div>
+      <div id="categoryBubbles" class="bubble-wrap"></div>
+      <div id="homeProductsGrid" class="grid-2"></div>
+    </section>
+
+    <!-- SEARCH -->
+    <section id="search" class="view-section">
+      <input type="text" id="searchInput" placeholder="Search products..." style="width:100%;padding:14px;border-radius:40px;border:1px solid #ddd;margin-bottom:15px;">
+      <div id="searchResults" class="grid-2"></div>
+    </section>
+
+    <!-- CART -->
+    <section id="cart" class="view-section">
+      <h3 style="margin-bottom:15px;">🛒 Your cart</h3>
+      <div id="cartItems"></div>
+      <div id="cartTotal" style="font-weight:700;margin:16px 0;"></div>
+      <button id="checkoutBtn" class="btn-add" style="width:100%;padding:12px;">Proceed to checkout</button>
+    </section>
+
+    <!-- WISHLIST -->
+    <section id="wishlist" class="view-section">
+      <h3>❤️ Wishlist</h3>
+      <div id="wishlistGrid" class="grid-2"></div>
+    </section>
+
+    <!-- ORDERS -->
+    <section id="orders" class="view-section">
+      <h3>📦 My orders</h3>
+      <div id="ordersList"></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="profile" class="view-section">
+      <div id="profileInfo" style="background:white;padding:20px;border-radius:24px;"></div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="view-section">
+      <h2>About LawaniHotel</h2>
+      <p style="margin-top:16px;">We provide premium hotel & lifestyle products, curated for comfort and elegance. Our mission is to bring exceptional experience.</p>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="view-section">
+      <h3>Contact us</h3>
+      <input type="text" id="contactName" placeholder="Name" class="form-group" style="width:100%;padding:12px;margin:5px 0;">
+      <input type="email" id="contactEmail" placeholder="Email" class="form-group" style="width:100%;padding:12px;margin:5px 0;">
+      <textarea id="contactMessage" placeholder="Message" class="form-group" rows="4" style="width:100%;padding:12px;"></textarea>
+      <button id="sendMsgBtn" class="btn-add">Send message</button>
+    </section>
+  </div>
+
+  <!-- bottom navigation -->
+  <nav class="bottom-nav">
+    <a href="#home" class="nav-item" data-route="home"><i class="fas fa-home"></i> Home</a>
+    <a href="#wishlist" class="nav-item" data-route="wishlist"><i class="fas fa-heart"></i> Wishlist <span class="badge" id="wishlistBadge">0</span></a>
+    <a href="#cart" class="nav-item" data-route="cart"><i class="fas fa-shopping-cart"></i> Cart <span class="badge" id="cartBadge">0</span></a>
+    <a href="#menu" class="nav-item" data-route="menu" id="menuLink"><i class="fas fa-bars"></i> Menu</a>
+  </nav>
+
+  <!-- auth modal -->
+  <div id="authModal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="tab-buttons">
+        <button id="loginTab" class="tab-btn active">Login</button>
+        <button id="registerTab" class="tab-btn">Register</button>
+      </div>
+      <div id="loginForm">
+        <div class="form-group"><input type="email" id="loginEmail" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="loginPassword" placeholder="Password"></div>
+        <button id="doLoginBtn" class="btn-add" style="width:100%;">Login</button>
+        <p id="loginError" style="color:red;font-size:0.8rem;margin-top:8px;"></p>
+      </div>
+      <div id="registerForm" style="display:none;">
+        <div class="form-group"><input id="regUsername" placeholder="Username"></div>
+        <div class="form-group"><input id="regPhone" placeholder="Phone number"></div>
+        <div class="form-group"><input type="email" id="regEmail" placeholder="Email"></div>
+        <div class="form-group"><input type="password" id="regPass" placeholder="Password"></div>
+        <div class="form-group"><input type="password" id="regConfirm" placeholder="Confirm password"></div>
+        <button id="doRegisterBtn" class="btn-add">Register</button>
+        <p id="regError" style="color:red;font-size:0.8rem;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- menu overlay -->
+  <div id="menuOverlay" class="menu-overlay"></div>
+  <div id="menuPanel" class="menu-panel">
+    <div id="menuContent"></div>
+  </div>
+
+  <!-- checkout modal -->
+  <div id="checkoutModal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Checkout</h3>
+      <div class="form-group"><input id="checkoutName" placeholder="Full name"></div>
+      <div class="form-group"><input id="checkoutPhone" placeholder="Phone"></div>
+      <div class="form-group"><textarea id="checkoutAddress" placeholder="Delivery address"></textarea></div>
+      <button id="confirmOrderBtn" class="btn-add" style="width:100%;">Place order</button>
+    </div>
+  </div>
+
+  <!-- product detail modal -->
+  <div id="productModal" class="modal-overlay">
+    <div class="modal-card">
+      <img id="prodModalImg" style="width:100%;height:200px;object-fit:cover;border-radius:20px;">
+      <h3 id="prodModalName"></h3>
+      <p id="prodModalCat"></p><p id="prodModalDesc"></p>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button id="modalAddCart" class="btn-add">Add cart</button>
+        <button id="modalWish" class="btn-icon"><i class="fas fa-heart"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase Modules -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, push, update, remove, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC2RaTcpv7xJpghU79C_rDKZGmwPcTpZ6E",
+      authDomain: "mystore-22c9c.firebaseapp.com",
+      databaseURL: "https://mystore-22c9c-default-rtdb.firebaseio.com",
+      projectId: "mystore-22c9c",
+      storageBucket: "mystore-22c9c.firebasestorage.app",
+      messagingSenderId: "229645807920",
+      appId: "1:229645807920:web:10925072b4d224678f18f5"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // state
+    let currentUser = null;
+    let allProducts = [];
+    let cartData = {};
+    let wishlistData = {};
+    let activeCategory = 'All';
+    let currentRoute = 'home';
+
+    // DOM helpers
+    const showToast = (msg) => { const t = document.getElementById('toast'); t.innerText = msg; t.style.display='block'; setTimeout(()=>t.style.display='none', 2500); };
+    const refreshBadges = () => {
+      const cartCount = Object.values(cartData).reduce((a,b)=>a+b.quantity,0);
+      const wishCount = Object.keys(wishlistData).length;
+      document.getElementById('cartBadge').innerText = cartCount;
+      document.getElementById('wishlistBadge').innerText = wishCount;
+    };
+
+    // routing
+    function handleRoute() {
+      const hash = location.hash.replace('#','') || 'home';
+      const routes = ['home','search','cart','wishlist','orders','profile','about','contact'];
+      currentRoute = routes.includes(hash) ? hash : 'home';
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(currentRoute).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+      document.querySelector(`.nav-item[data-route="${currentRoute}"]`)?.classList.add('active');
+      if(currentRoute==='cart') renderCart();
+      if(currentRoute==='wishlist') renderWishlist();
+      if(currentRoute==='orders') renderOrders();
+      if(currentRoute==='profile') renderProfile();
+      if(currentRoute==='search') { document.getElementById('searchInput').value=''; renderSearch(''); }
+      if(currentRoute==='home') renderHome();
+      if(currentRoute==='contact') {}
+    }
+    window.addEventListener('hashchange', handleRoute);
+
+    // load products & slider
+    function loadProducts() {
+      onValue(ref(db, 'products'), snap => {
+        allProducts = [];
+        if(snap.exists()) {
+          snap.forEach(child => {
+            allProducts.push({ id: child.key, ...child.val() });
+          });
+        }
+        renderHome();
+        renderSearch(document.getElementById('searchInput').value || '');
+        renderCategoryBubbles();
+      });
+    }
+    
+    function renderCategoryBubbles() {
+      const cats = ['All', ...new Set(allProducts.map(p=>p.category).filter(Boolean))];
+      const bubbleWrap = document.getElementById('categoryBubbles');
+      bubbleWrap.innerHTML = '';
+      cats.forEach(cat => {
+        const b = document.createElement('div');
+        b.className = 'bubble' + (cat===activeCategory?' active':'');
+        b.innerText = cat;
+        b.onclick = () => { activeCategory = cat; renderHome(); renderCategoryBubbles(); };
+        bubbleWrap.appendChild(b);
+      });
+    }
+
+    function renderHome() {
+      const grid = document.getElementById('homeProductsGrid');
+      const filtered = activeCategory==='All' ? allProducts : allProducts.filter(p=>p.category===activeCategory);
+      grid.innerHTML = filtered.map(p => `
+        <div class="product-card" data-id="${p.id}">
+          <img src="${p.imageUrl || 'https://placehold.co/200x150?text=Hotel'}" alt="${p.name}">
+          <span class="category">${p.category}</span>
+          <h4>${p.name}</h4>
+          <div class="price">$${Number(p.price).toFixed(2)}</div>
+          <div class="card-actions">
+            <button class="btn-add add-to-cart" data-id="${p.id}">Add</button>
+            <button class="btn-icon wish-btn" data-id="${p.id}"><i class="fas fa-heart"></i></button>
+          </div>
+        </div>`).join('');
+      // hero slider fallback
+      loadSlider();
+      attachProductEvents();
+    }
+
+    function loadSlider() {
+      const sliderRef = ref(db, 'sliderImages');
+      onValue(sliderRef, snap => {
+        const cont = document.getElementById('heroSliderContainer');
+        let imgs = [];
+        snap.forEach(s=>imgs.push(s.val().downloadURL));
+        if(imgs.length===0) { cont.innerHTML = `<div style="background:var(--primary);height:100%;display:flex;align-items:center;justify-content:center;color:white;font-size:2rem;">LawaniHotel</div>`; }
+        else {
+          cont.innerHTML = `<img src="${imgs[0]}" style="width:100%;height:100%;object-fit:cover;">`;
+        }
+      });
+    }
+
+    function attachProductEvents() {
+      document.querySelectorAll('.add-to-cart').forEach(btn => btn.onclick = (e) => {
+        e.stopPropagation();
+        addToCart(btn.dataset.id);
+      });
+      document.querySelectorAll('.wish-btn').forEach(btn => btn.onclick = (e) => {
+        e.stopPropagation();
+        addToWishlist(btn.dataset.id);
+      });
+      document.querySelectorAll('.product-card').forEach(card => {
+        card.onclick = () => openProductModal(card.dataset.id);
+      });
+    }
+
+    function openProductModal(id) {
+      const p = allProducts.find(x=>x.id===id);
+      if(!p) return;
+      document.getElementById('prodModalImg').src = p.imageUrl || '';
+      document.getElementById('prodModalName').innerText = p.name;
+      document.getElementById('prodModalCat').innerText = p.category;
+      document.getElementById('prodModalDesc').innerText = p.description || '';
+      document.getElementById('productModal').classList.add('show');
+      document.getElementById('modalAddCart').onclick = ()=>addToCart(p.id);
+      document.getElementById('modalWish').onclick = ()=>addToWishlist(p.id);
+    }
+    document.querySelectorAll('.modal-overlay').forEach(modal => modal.addEventListener('click', (e)=>{ if(e.target===modal) modal.classList.remove('show'); }));
+
+    // auth
+    function initAuth() {
+      onAuthStateChanged(auth, async user => {
+        currentUser = user;
+        const indicator = document.getElementById('authIndicator');
+        if(user) {
+          indicator.classList.add('logged-in');
+          // load user cart/wishlist
+          const snap = await get(ref(db, 'users/'+user.uid));
+          if(snap.exists()) {
+            const data = snap.val();
+            cartData = data.cart || {};
+            wishlistData = data.wishlist || {};
+          }
+          refreshBadges();
+          renderProfile();
+          if(currentRoute==='cart') renderCart();
+          if(currentRoute==='wishlist') renderWishlist();
+        } else {
+          indicator.classList.remove('logged-in');
+          cartData = {}; wishlistData = {};
+          refreshBadges();
+          renderCart(); renderWishlist(); renderProfile();
+        }
+      });
+    }
+
+    // auth modal logic
+    const authModal = document.getElementById('authModal');
+    document.getElementById('loginTab').onclick = () => { document.getElementById('loginForm').style.display='block'; document.getElementById('registerForm').style.display='none'; };
+    document.getElementById('registerTab').onclick = () => { document.getElementById('registerForm').style.display='block'; document.getElementById('loginForm').style.display='none'; };
+    document.getElementById('doLoginBtn').onclick = async () => {
+      try {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPassword').value;
+        await signInWithEmailAndPassword(auth, email, pass);
+        authModal.classList.remove('show');
+        showToast('Logged in');
+      } catch(err) { document.getElementById('loginError').innerText = err.message; }
+    };
+    document.getElementById('doRegisterBtn').onclick = async () => {
+      try {
+        const username = document.getElementById('regUsername').value;
+        const phone = document.getElementById('regPhone').value;
+        const email = document.getElementById('regEmail').value;
+        const pass = document.getElementById('regPass').value;
+        const confirm = document.getElementById('regConfirm').value;
+        if(pass!==confirm) throw new Error('Passwords do not match');
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await set(ref(db, 'users/'+cred.user.uid), { username, phoneNumber: phone, email, createdAt: Date.now(), cart: {}, wishlist: {} });
+        authModal.classList.remove('show');
+        showToast('Registered');
+      } catch(err) { document.getElementById('regError').innerText = err.message; }
+    };
+
+    // cart & wishlist functions
+    async function addToCart(pid) {
+      if(!currentUser) { authModal.classList.add('show'); return; }
+      const prod = allProducts.find(p=>p.id===pid);
+      const cartRef = ref(db, `users/${currentUser.uid}/cart/${pid}`);
+      const existing = cartData[pid] ? cartData[pid].quantity : 0;
+      await set(cartRef, { productId: pid, name: prod.name, price: prod.price, imageUrl: prod.imageUrl, quantity: existing + 1 });
+      cartData[pid] = { ...cartData[pid], quantity: existing+1 };
+      refreshBadges(); showToast('Added to cart');
+    }
+
+    async function addToWishlist(pid) {
+      if(!currentUser) { authModal.classList.add('show'); return; }
+      const prod = allProducts.find(p=>p.id===pid);
+      const wRef = ref(db, `users/${currentUser.uid}/wishlist/${pid}`);
+      await set(wRef, { productId: pid, name: prod.name, price: prod.price, imageUrl: prod.imageUrl });
+      wishlistData[pid] = { productId: pid, name: prod.name, price: prod.price, imageUrl: prod.imageUrl };
+      refreshBadges(); showToast('Wishlisted');
+    }
+
+    async function renderCart() {
+      const cont = document.getElementById('cartItems');
+      if(!currentUser) { cont.innerHTML = '<p>Please login to see cart</p>'; return; }
+      let html = '', total = 0;
+      for(const [pid, item] of Object.entries(cartData)) {
+        total += item.price * item.quantity;
+        html += `<div style="display:flex;align-items:center;gap:10px;background:white;padding:10px;border-radius:16px;margin-bottom:10px;">
+          <img src="${item.imageUrl}" width="60" height="60" style="border-radius:12px;">
+          <div style="flex:1;"><h4>${item.name}</h4><p>$${item.price}</p></div>
+          <button onclick="changeQty('${pid}', -1)">-</button><span>${item.quantity}</span><button onclick="changeQty('${pid}', 1)">+</button>
+          <button onclick="removeCartItem('${pid}')"><i class="fas fa-trash"></i></button>
+        </div>`;
+      }
+      cont.innerHTML = html || '<p>Cart empty</p>';
+      document.getElementById('cartTotal').innerText = total ? 'Total: $' + total.toFixed(2) : '';
+    }
+    window.changeQty = async (pid, delta) => {
+      if(!currentUser) return;
+      const existing = cartData[pid]?.quantity || 0;
+      const newQty = existing + delta;
+      if(newQty <= 0) { await removeCartItem(pid); return; }
+      await update(ref(db, `users/${currentUser.uid}/cart/${pid}`), { quantity: newQty });
+      cartData[pid].quantity = newQty; refreshBadges(); renderCart();
+    };
+    window.removeCartItem = async (pid) => {
+      await remove(ref(db, `users/${currentUser.uid}/cart/${pid}`));
+      delete cartData[pid]; refreshBadges(); renderCart();
+    };
+
+    async function renderWishlist() {
+      const cont = document.getElementById('wishlistGrid');
+      if(!currentUser) { cont.innerHTML = '<p>Login to view wishlist</p>'; return; }
+      cont.innerHTML = Object.values(wishlistData).map(item => `
+        <div class="product-card">
+          <img src="${item.imageUrl}" style="height:120px;width:100%;object-fit:cover;">
+          <h4>${item.name}</h4>
+          <div style="display:flex;gap:8px;margin-top:8px;"><button class="btn-add" onclick="moveToCart('${item.productId}')">Move</button>
+          <button class="btn-icon" onclick="removeWish('${item.productId}')"><i class="fas fa-trash"></i></button></div>
+        </div>`).join('');
+    }
+    window.moveToCart = async (pid) => {
+      await addToCart(pid);
+      await removeWish(pid);
+    };
+    window.removeWish = async (pid) => {
+      await remove(ref(db, `users/${currentUser.uid}/wishlist/${pid}`));
+      delete wishlistData[pid]; refreshBadges(); renderWishlist();
+    };
+
+    // checkout
+    document.getElementById('checkoutBtn').onclick = async () => {
+      if(!currentUser) { authModal.classList.add('show'); return; }
+      const profile = (await get(ref(db, 'users/'+currentUser.uid))).val() || {};
+      document.getElementById('checkoutName').value = profile.username || '';
+      document.getElementById('checkoutPhone').value = profile.phoneNumber || '';
+      document.getElementById('checkoutModal').classList.add('show');
+    };
+    document.getElementById('confirmOrderBtn').onclick = async () => {
+      if(!currentUser) return;
+      const name = document.getElementById('checkoutName').value;
+      const phone = document.getElementById('checkoutPhone').value;
+      const address = document.getElementById('checkoutAddress').value;
+      const items = Object.values(cartData).map(i=>({name:i.name, price:i.price, quantity:i.quantity, imageUrl:i.imageUrl}));
+      const total = items.reduce((a,b)=>a+b.price*b.quantity,0);
+      const orderId = push(ref(db, 'orders/'+currentUser.uid)).key;
+      await set(ref(db, `orders/${currentUser.uid}/${orderId}`), { orderId, userId: currentUser.uid, username: name, userEmail: currentUser.email, phoneNumber: phone, shippingAddress: address, items, totalAmount: total, date: Date.now(), status: 'Pending' });
+      await set(ref(db, `users/${currentUser.uid}/cart`), {});
+      cartData = {}; refreshBadges();
+      document.getElementById('checkoutModal').classList.remove('show');
+      location.hash = '#orders';
+      showToast('Order placed');
+    };
+
+    // orders render
+    async function renderOrders() {
+      const cont = document.getElementById('ordersList');
+      if(!currentUser) { cont.innerHTML = '<p>Login to view orders</p>'; return; }
+      const snap = await get(ref(db, `orders/${currentUser.uid}`));
+      let html = '';
+      snap.forEach(o => {
+        const ord = o.val();
+        html += `<div style="background:white;padding:15px;border-radius:20px;margin-bottom:10px;">
+        <b>${ord.orderId}</b> · ${new Date(ord.date).toLocaleDateString()} · <span class="status-badge" style="background:#ffeaa7">${ord.status}</span><br>
+        ${ord.shippingAddress} · ${ord.phoneNumber} <br>Total $${ord.totalAmount}
+        </div>`;
+      });
+      cont.innerHTML = html || '<p>No orders</p>';
+    }
+
+    // profile
+    async function renderProfile() {
+      const div = document.getElementById('profileInfo');
+      if(!currentUser) { div.innerHTML = 'Guest'; return; }
+      const snap = await get(ref(db, `users/${currentUser.uid}`));
+      const d = snap.val() || {};
+      div.innerHTML = `<h3>${d.username}</h3><p>${d.email}</p><p>${d.phoneNumber}</p><button id="logoutBtn" class="btn-add">Logout</button>`;
+      document.getElementById('logoutBtn').onclick = () => signOut(auth);
+    }
+
+    // search
+    document.getElementById('searchInput').addEventListener('input', (e)=>renderSearch(e.target.value));
+    function renderSearch(q) {
+      const grid = document.getElementById('searchResults');
+      const filtered = allProducts.filter(p => (p.name + p.category + p.description).toLowerCase().includes(q.toLowerCase()));
+      grid.innerHTML = filtered.map(p=>`<div class="product-card"><img src="${p.imageUrl}" style="height:100px;width:100%;object-fit:cover;"><h4>${p.name}</h4><p>$${p.price}</p></div>`).join('');
+    }
+
+    // menu & contact
+    document.getElementById('menuLink').onclick = (e) => { e.preventDefault(); openMenu(); };
+    function openMenu() {
+      const panel = document.getElementById('menuPanel');
+      const overlay = document.getElementById('menuOverlay');
+      const content = document.getElementById('menuContent');
+      let html = '';
+      if(currentUser) {
+        html = `<div style="padding:10px;"><a href="#profile" onclick="closeMenu()">Profile</a><br><a href="#orders" onclick="closeMenu()">Orders</a><br><a href="#contact" onclick="closeMenu()">Contact</a><br><button id="menuLogout" class="btn-add" style="margin-top:20px;">Logout</button></div>`;
+      } else {
+        html = `<div style="padding:10px;"><a href="#about" onclick="closeMenu()">About</a><br><a href="#contact" onclick="closeMenu()">Contact</a><br><button id="menuLogin" class="btn-add" style="margin-top:20px;">Login</button></div>`;
+      }
+      content.innerHTML = html;
+      panel.classList.add('show'); overlay.classList.add('show');
+      document.getElementById('menuLogout')?.addEventListener('click', ()=>{ signOut(auth); closeMenu(); });
+      document.getElementById('menuLogin')?.addEventListener('click', ()=>{ authModal.classList.add('show'); closeMenu(); });
+    }
+    function closeMenu(){ document.getElementById('menuPanel').classList.remove('show'); document.getElementById('menuOverlay').classList.remove('show'); }
+    document.getElementById('menuOverlay').onclick = closeMenu;
+
+    // contact submit
+    document.getElementById('sendMsgBtn').onclick = async () => {
+      const name = document.getElementById('contactName').value;
+      const email = document.getElementById('contactEmail').value;
+      const message = document.getElementById('contactMessage').value;
+      await push(ref(db, 'messages'), { name, email, message, date: Date.now() });
+      showToast('Message sent');
+    };
+
+    // init
+    loadProducts();
+    initAuth();
+    handleRoute();
+  </script>
+</body>
+</html>
